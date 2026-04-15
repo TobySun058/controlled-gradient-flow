@@ -9,8 +9,9 @@ from granmian_synthesis.core.controlled_dynamics import (
     build_control_affine_gradient_flow_system,
     create_control_synthesis_problem,
     create_ode_solver_interface,
-    simulate_control_strategy_comparison,
+    simulate_minimum_energy,
 )
+
 from granmian_synthesis.core.objective import (
     create_default_objective_parameters,
     create_uncontrolled_gradient_flow,
@@ -62,8 +63,15 @@ def run_minimum_energy_case(
         state_dimension=2,
     )
 
-    ode_solver_interface = create_ode_solver_interface()
+    # lighter ODE settings
+    ode_solver_interface = create_ode_solver_interface(
+        relative_tolerance=1e-5,
+        absolute_tolerance=1e-5,
+        maximum_steps=200000,
+        initial_step_size=1e-3,
+    )
 
+    # lighter almost-Gramian problem
     synthesis_problem = create_control_synthesis_problem(
         system=system,
         initial_state=initial_state,
@@ -71,9 +79,14 @@ def run_minimum_energy_case(
         initial_time=initial_time,
         terminal_time=terminal_time,
         ode_solver_interface=ode_solver_interface,
+        integration_samples=3000,
+        maximum_iterations=4,
+        minimum_iterations=1,
+        record_samples=200,
+        interpolation_samples=1000,
     )
 
-    comparison_results = simulate_control_strategy_comparison(
+    minimum_energy_results = simulate_minimum_energy(
         system,
         synthesis_problem,
         initial_state,
@@ -83,10 +96,10 @@ def run_minimum_energy_case(
         ode_solver_interface,
     )
 
-    minimum_energy_trajectory = comparison_results["minimum_energy_state_trajectory"]
+    minimum_energy_trajectory = minimum_energy_results["minimum_energy_state_trajectory"]
     minimum_energy_terminal_state = minimum_energy_trajectory[-1]
     minimum_energy_control_energy = float(
-        comparison_results["minimum_energy_control_energy"]
+        minimum_energy_results["minimum_energy_control_energy"]
     )
 
     segment_distance = compute_distance(initial_state, target_state)
@@ -114,7 +127,6 @@ def run_minimum_energy_case(
         "segment_energy": float(minimum_energy_control_energy),
         "segment_energy_derivative": float(segment_energy_derivative),
     }
-
 
 def main():
     softmin_sharpness = 1.25

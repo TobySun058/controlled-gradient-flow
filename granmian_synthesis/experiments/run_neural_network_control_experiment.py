@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
+from pathlib import Path
+from typing import Dict, List
+
 import jax
 import jax.numpy as jnp
-from pathlib import Path
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 from granmian_synthesis.core.controlled_dynamics import (
     build_control_affine_gradient_flow_system,
@@ -13,9 +16,12 @@ from granmian_synthesis.core.controlled_dynamics import (
     simulate_control_strategy_comparison,
 )
 from granmian_synthesis.core.ml_loss_neural_network import (
-    create_default_large_network_setup,
+    NetworkArchitecture,
     create_large_network_gradient_flow,
+    create_synthetic_binary_classification_dataset,
     evaluate_flat_binary_classification_loss,
+    flatten_parameter_pytree,
+    initialize_mlp_parameters,
 )
 
 
@@ -23,50 +29,84 @@ OUTPUT_DIRECTORY = Path("granmian_synthesis/data")
 OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 
-def compute_terminal_error(terminal_state, target_state):
-    return float(jnp.linalg.norm(jnp.array(terminal_state) - jnp.array(target_state)))
-
-
-def compute_initial_target_distance(initial_state, target_state):
-    return float(jnp.linalg.norm(jnp.array(initial_state) - jnp.array(target_state)))
-
-
-def train_to_local_minimum(
-    initial_state,
-    dataset,
-    architecture,
-    metadata,
-    l2_regularization: float = 1e-4,
-    step_size: float = 1e-2,
-    iteration_count: int = 2000,
+def create_small_network_setup(
+    dataset_seed: int = 0,
+    initialization_seed: int = 0,
+    sample_count_per_class: int = 120,
+    weight_scale: float = 0.20,
 ):
-    loss_function = lambda parameter: evaluate_flat_binary_classification_loss(
-        parameter,
-        dataset,
-        architecture,
-        metadata,
-        l2_regularization=l2_regularization,
+    """
+    Small network:
+        input(2) -> hidden(3) -> output(1)
+
+    Parameter count:
+        2*3 + 3 + 3*1 + 1 = 13
+    """
+    dataset = create_synthetic_binary_classification_dataset(
+        sample_count_per_class=sample_count_per_class,
+        random_seed=dataset_seed,
     )
-    gradient_function = jax.grad(loss_function)
+    architecture = NetworkArchitecture(layer_sizes=(2, 3, 1))
 
-    parameter = jnp.array(initial_state, dtype=float)
+    parameter_list = initialize_mlp_parameters(
+        architecture,
+        random_seed=initialization_seed,
+        weight_scale=weight_scale,
+    )
+    flat_parameter, metadata = flatten_parameter_pytree(parameter_list)
 
-    for _ in range(iteration_count):
-        parameter = parameter - step_size * gradient_function(parameter)
+    return {
+        "dataset": dataset,
+        "architecture": architecture,
+        "metadata": metadata,
+        "initial_parameter_vector": flat_parameter,
+    }
 
-    return parameter
 
-
-def run_case(
-    case_label,
-    initial_state,
-    target_state,
+def evaluate_loss(
+    state,
     dataset,
     architecture,
     metadata,
     l2_regularization: float = 1e-4,
-    initial_time: float = 0.0,
-    terminal_time: float = 0.75,
+) -> float:
+    return float(
+        evaluate_flat_binary_classification_loss(
+            jnp.array(state),
+            dataset,
+            architecture,
+            metadata,
+            l2_regularization=l2_regularization,
+        )
+    )
+
+
+def compute_distance(point_a, point_b) -> float:
+    return float(jnp.linalg.norm(jnp.array(point_a) - jnp.array(point_b)))
+
+
+def sample_unit_directions(key, dimension: int, direction_count: int):
+    raw = jax.random.normal(key, shape=(direction_count, dimension))
+    norms = jnp.linalg.norm(raw, axis=1, keepdims=True)
+    return raw / jnp.maximum(norms, 1e-12)
+
+
+def generate_ray_points(initial_state, direction, segment_length: float, segment_count: int):
+    initial_state = jnp.array(initial_state, dtype=float)
+    direction = jnp.array(direction, dtype=float)
+
+    points = [
+        initial_state + float(segment_index) * segment_length * direction
+        for segment_index in range(segment_count + 1)
+    ]
+    return points
+
+
+def create_system(
+    dataset,
+    architecture,
+    metadata,
+    l2_regularization: float = 1e-4,
 ):
     vector_field = create_large_network_gradient_flow(
         dataset,
@@ -75,12 +115,30 @@ def run_case(
         l2_regularization=l2_regularization,
     )
 
+    state_dimension = int(sum(metadata.sizes))
+
     system = build_control_affine_gradient_flow_system(
         vector_field,
-        state_dimension=initial_state.shape[0],
+        state_dimension=state_dimension,
     )
-
     ode_solver_interface = create_ode_solver_interface()
+
+    return system, ode_solver_interface
+
+
+def run_minimum_energy_segment(
+    initial_state,
+    target_state,
+    system,
+    ode_solver_interface,
+    initial_time: float = 0.0,
+    terminal_time: float = 0.40,
+):
+    """
+    Compute the minimum-energy control for one small segment only.
+    """
+    initial_state = jnp.array(initial_state, dtype=float)
+    target_state = jnp.array(target_state, dtype=float)
 
     synthesis_problem = create_control_synthesis_problem(
         system=system,
@@ -101,198 +159,316 @@ def run_case(
         ode_solver_interface,
     )
 
-    uncontrolled_terminal_state = comparison_results["uncontrolled_state_trajectory"][-1]
     minimum_energy_terminal_state = comparison_results["minimum_energy_state_trajectory"][-1]
-    approximate_minimum_energy_terminal_state = comparison_results[
-        "approximate_minimum_energy_state_trajectory"
-    ][-1]
-    feedback_linearization_terminal_state = comparison_results[
-        "feedback_linearization_state_trajectory"
-    ][-1]
-
-    initial_target_distance = compute_initial_target_distance(initial_state, target_state)
     minimum_energy_control_energy = float(comparison_results["minimum_energy_control_energy"])
 
-    energy_per_distance = (
-        minimum_energy_control_energy / initial_target_distance
-        if initial_target_distance > 0.0
-        else np.nan
-    )
+    segment_distance = compute_distance(initial_state, target_state)
+    terminal_error = compute_distance(minimum_energy_terminal_state, target_state)
 
     return {
-        "case_label": case_label,
-        "dimension": int(initial_state.shape[0]),
-        "initial_target_distance": float(initial_target_distance),
-
-        "uncontrolled_terminal_error": compute_terminal_error(
-            uncontrolled_terminal_state, target_state
+        "terminal_state": minimum_energy_terminal_state,
+        "segment_distance": float(segment_distance),
+        "segment_energy": float(minimum_energy_control_energy),
+        "terminal_error": float(terminal_error),
+        "energy_per_distance": (
+            float(minimum_energy_control_energy / segment_distance)
+            if segment_distance > 0.0
+            else np.nan
         ),
-        "minimum_energy_terminal_error": compute_terminal_error(
-            minimum_energy_terminal_state, target_state
-        ),
-        "approximate_minimum_energy_terminal_error": compute_terminal_error(
-            approximate_minimum_energy_terminal_state, target_state
-        ),
-        "feedback_linearization_terminal_error": compute_terminal_error(
-            feedback_linearization_terminal_state, target_state
-        ),
-
-        "initial_loss": float(
-            evaluate_flat_binary_classification_loss(
-                initial_state,
-                dataset,
-                architecture,
-                metadata,
-                l2_regularization=l2_regularization,
-            )
-        ),
-        "target_loss": float(
-            evaluate_flat_binary_classification_loss(
-                target_state,
-                dataset,
-                architecture,
-                metadata,
-                l2_regularization=l2_regularization,
-            )
-        ),
-        "uncontrolled_terminal_loss": float(
-            evaluate_flat_binary_classification_loss(
-                uncontrolled_terminal_state,
-                dataset,
-                architecture,
-                metadata,
-                l2_regularization=l2_regularization,
-            )
-        ),
-        "minimum_energy_terminal_loss": float(
-            evaluate_flat_binary_classification_loss(
-                minimum_energy_terminal_state,
-                dataset,
-                architecture,
-                metadata,
-                l2_regularization=l2_regularization,
-            )
-        ),
-        "approximate_minimum_energy_terminal_loss": float(
-            evaluate_flat_binary_classification_loss(
-                approximate_minimum_energy_terminal_state,
-                dataset,
-                architecture,
-                metadata,
-                l2_regularization=l2_regularization,
-            )
-        ),
-        "feedback_linearization_terminal_loss": float(
-            evaluate_flat_binary_classification_loss(
-                feedback_linearization_terminal_state,
-                dataset,
-                architecture,
-                metadata,
-                l2_regularization=l2_regularization,
-            )
-        ),
-
-        "minimum_energy_control_energy": minimum_energy_control_energy,
-        "approximate_minimum_energy_control_energy": float(
-            comparison_results["approximate_minimum_energy_control_energy"]
-        ),
-        "feedback_linearization_control_energy": float(
-            comparison_results["feedback_linearization_control_energy"]
-        ),
-        "energy_per_distance": float(energy_per_distance),
     }
 
 
-def print_case_summary(case_name, result):
-    print(f"\n==================== {case_name} ====================\n")
-    print(f"dimension                              = {result['dimension']}")
-    print(f"initial-target distance                = {result['initial_target_distance']:.8f}")
-    print(f"initial loss                           = {result['initial_loss']:.8f}")
-    print(f"target loss                            = {result['target_loss']:.8f}")
-    print()
-    print(f"uncontrolled terminal error            = {result['uncontrolled_terminal_error']:.8f}")
-    print(f"minimum-energy terminal error          = {result['minimum_energy_terminal_error']:.8f}")
-    print(f"approx minimum-energy terminal error   = {result['approximate_minimum_energy_terminal_error']:.8f}")
-    print(f"feedback linearization terminal error  = {result['feedback_linearization_terminal_error']:.8f}")
-    print()
-    print(f"uncontrolled terminal loss             = {result['uncontrolled_terminal_loss']:.8f}")
-    print(f"minimum-energy terminal loss           = {result['minimum_energy_terminal_loss']:.8f}")
-    print(f"approx minimum-energy terminal loss    = {result['approximate_minimum_energy_terminal_loss']:.8f}")
-    print(f"feedback linearization terminal loss   = {result['feedback_linearization_terminal_loss']:.8f}")
-    print()
-    print(f"minimum-energy control energy          = {result['minimum_energy_control_energy']:.8f}")
-    print(f"approx minimum-energy control energy   = {result['approximate_minimum_energy_control_energy']:.8f}")
-    print(f"feedback linearization control energy  = {result['feedback_linearization_control_energy']:.8f}")
-    print(f"energy / distance                      = {result['energy_per_distance']:.8f}")
+def make_plots(results_df: pd.DataFrame):
+    """
+    Create:
+      1) segment energy vs segment index
+      2) cumulative energy vs radius
+      3) heatmap of segment energy
+      4) heatmap of energy per distance
+    """
+    if results_df.empty:
+        return
+
+    # Plot 1: segment energy for each direction
+    plt.figure(figsize=(10, 6))
+    for direction_index, group in results_df.groupby("direction_index"):
+        group = group.sort_values("segment_index")
+        plt.plot(
+            group["segment_index"],
+            group["segment_energy"],
+            marker="o",
+            label=f"dir {direction_index}",
+        )
+    plt.xlabel("Segment index")
+    plt.ylabel("Segment energy")
+    plt.title("Per-segment minimum control energy along each direction")
+    plt.legend(ncol=2, fontsize=8)
+    plt.tight_layout()
+    plt.savefig(
+        OUTPUT_DIRECTORY / "small_network_directional_segment_energy.png",
+        dpi=200,
+    )
+    plt.close()
+
+    # Plot 2: cumulative energy vs radius
+    plt.figure(figsize=(10, 6))
+    for direction_index, group in results_df.groupby("direction_index"):
+        group = group.sort_values("segment_index")
+        plt.plot(
+            group["segment_end_radius"],
+            group["cumulative_energy"],
+            marker="o",
+            label=f"dir {direction_index}",
+        )
+    plt.xlabel("Radius")
+    plt.ylabel("Cumulative energy")
+    plt.title("Cumulative minimum control energy along each direction")
+    plt.legend(ncol=2, fontsize=8)
+    plt.tight_layout()
+    plt.savefig(
+        OUTPUT_DIRECTORY / "small_network_directional_cumulative_energy.png",
+        dpi=200,
+    )
+    plt.close()
+
+    # Plot 3: heatmap of segment energy
+    energy_matrix = (
+        results_df.pivot(
+            index="direction_index",
+            columns="segment_index",
+            values="segment_energy",
+        )
+        .sort_index()
+        .sort_index(axis=1)
+    )
+
+    plt.figure(figsize=(10, 6))
+    plt.imshow(energy_matrix.values, aspect="auto")
+    plt.colorbar(label="Segment energy")
+    plt.xlabel("Segment index")
+    plt.ylabel("Direction index")
+    plt.title("Heatmap of per-segment minimum control energy")
+    plt.tight_layout()
+    plt.savefig(
+        OUTPUT_DIRECTORY / "small_network_directional_segment_energy_heatmap.png",
+        dpi=200,
+    )
+    plt.close()
+
+    # Plot 4: heatmap of energy per distance
+    epd_matrix = (
+        results_df.pivot(
+            index="direction_index",
+            columns="segment_index",
+            values="energy_per_distance",
+        )
+        .sort_index()
+        .sort_index(axis=1)
+    )
+
+    plt.figure(figsize=(10, 6))
+    plt.imshow(epd_matrix.values, aspect="auto")
+    plt.colorbar(label="Energy / distance")
+    plt.xlabel("Segment index")
+    plt.ylabel("Direction index")
+    plt.title("Heatmap of energy per distance")
+    plt.tight_layout()
+    plt.savefig(
+        OUTPUT_DIRECTORY / "small_network_directional_energy_per_distance_heatmap.png",
+        dpi=200,
+    )
+    plt.close()
 
 
 def main():
-    setup = create_default_large_network_setup(random_seed=0)
+    dataset_seed = 0
+    initialization_seed = 3
+
+    l2_regularization = 1e-4
+    direction_count = 3
+    segment_count = 3
+    segment_length = 0.35
+    terminal_time = 0.40
+
+    setup = create_small_network_setup(
+        dataset_seed=dataset_seed,
+        initialization_seed=initialization_seed,
+        sample_count_per_class=120,
+        weight_scale=0.20,
+    )
 
     dataset = setup["dataset"]
     architecture = setup["architecture"]
     metadata = setup["metadata"]
-    reference_parameter = setup["initial_parameter_vector"]
+    initial_state = setup["initial_parameter_vector"]
 
-    parameter_dimension = reference_parameter.shape[0]
-
-    initial_state = jnp.ones((parameter_dimension,))
-    designated_target = 4.0 * jnp.ones((parameter_dimension,))
-
-    minimum_target = train_to_local_minimum(
-        initial_state=initial_state,
-        dataset=dataset,
-        architecture=architecture,
-        metadata=metadata,
-        l2_regularization=1e-4,
-        step_size=1e-2,
-        iteration_count=2000,
+    initial_loss = evaluate_loss(
+        initial_state,
+        dataset,
+        architecture,
+        metadata,
+        l2_regularization=l2_regularization,
     )
 
-    results = []
-
-    designated_result = run_case(
-        case_label="designated_target",
-        initial_state=initial_state,
-        target_state=designated_target,
-        dataset=dataset,
-        architecture=architecture,
-        metadata=metadata,
-        l2_regularization=1e-4,
-        initial_time=0.0,
-        terminal_time=0.75,
+    system, ode_solver_interface = create_system(
+        dataset,
+        architecture,
+        metadata,
+        l2_regularization=l2_regularization,
     )
-    results.append(designated_result)
-    print_case_summary("DESIGNATED TARGET CASE", designated_result)
 
-    minimum_result = run_case(
-        case_label="local_minimum_target",
-        initial_state=initial_state,
-        target_state=minimum_target,
-        dataset=dataset,
-        architecture=architecture,
-        metadata=metadata,
-        l2_regularization=1e-4,
-        initial_time=0.0,
-        terminal_time=0.75,
+    key = jax.random.PRNGKey(123)
+    directions = sample_unit_directions(
+        key,
+        initial_state.shape[0],
+        direction_count,
     )
-    results.append(minimum_result)
-    print_case_summary("LOCAL MINIMUM TARGET CASE", minimum_result)
 
-    results_df = pd.DataFrame(results)
+    all_rows: List[Dict] = []
+    summary_rows: List[Dict] = []
 
-    csv_path = OUTPUT_DIRECTORY / "large_network_control_summary.csv"
-    txt_path = OUTPUT_DIRECTORY / "large_network_control_summary.txt"
+    print("\n================ DIRECTIONAL SEGMENT ENERGY STUDY ================\n")
+    print(f"parameter dimension     = {int(initial_state.shape[0])}")
+    print(f"initial loss            = {initial_loss:.8f}")
+    print(f"direction_count         = {direction_count}")
+    print(f"segment_count           = {segment_count}")
+    print(f"segment_length          = {segment_length:.4f}")
+    print(f"terminal_time/segment   = {terminal_time:.4f}")
+    print()
 
-    results_df.to_csv(csv_path, index=False)
+    for direction_index, direction in enumerate(directions):
+        ray_points = generate_ray_points(
+            initial_state=initial_state,
+            direction=direction,
+            segment_length=segment_length,
+            segment_count=segment_count,
+        )
 
-    with open(txt_path, "w") as file:
-        file.write(results_df.to_string(index=False))
+        cumulative_energy = 0.0
+        cumulative_distance = 0.0
 
-    print("\n===============================================================\n")
-    print(results_df.to_string(index=False))
-    print(f"\nSaved CSV summary to: {csv_path}")
-    print(f"Saved text summary to: {txt_path}")
+        print(f"Direction {direction_index:02d}")
+
+        for segment_index in range(segment_count):
+            segment_initial_state = ray_points[segment_index]
+            segment_target_state = ray_points[segment_index + 1]
+
+            start_radius = float(segment_index * segment_length)
+            end_radius = float((segment_index + 1) * segment_length)
+
+            segment_start_loss = evaluate_loss(
+                segment_initial_state,
+                dataset,
+                architecture,
+                metadata,
+                l2_regularization=l2_regularization,
+            )
+            segment_target_loss = evaluate_loss(
+                segment_target_state,
+                dataset,
+                architecture,
+                metadata,
+                l2_regularization=l2_regularization,
+            )
+
+            result = run_minimum_energy_segment(
+                initial_state=segment_initial_state,
+                target_state=segment_target_state,
+                system=system,
+                ode_solver_interface=ode_solver_interface,
+                initial_time=0.0,
+                terminal_time=terminal_time,
+            )
+
+            cumulative_energy += result["segment_energy"]
+            cumulative_distance += result["segment_distance"]
+
+            row = {
+                "direction_index": int(direction_index),
+                "segment_index": int(segment_index),
+                "segment_start_radius": start_radius,
+                "segment_end_radius": end_radius,
+                "cumulative_distance": float(cumulative_distance),
+                "cumulative_energy": float(cumulative_energy),
+                "segment_start_loss": float(segment_start_loss),
+                "segment_target_loss": float(segment_target_loss),
+                "segment_distance": float(result["segment_distance"]),
+                "segment_energy": float(result["segment_energy"]),
+                "energy_per_distance": float(result["energy_per_distance"]),
+                "terminal_error": float(result["terminal_error"]),
+            }
+            all_rows.append(row)
+
+            print(
+                f"  segment {segment_index:02d} | "
+                f"radius [{start_radius:.2f}, {end_radius:.2f}] | "
+                f"energy = {result['segment_energy']:.8f} | "
+                f"energy/distance = {result['energy_per_distance']:.8f} | "
+                f"terminal error = {result['terminal_error']:.8f}"
+            )
+
+        direction_rows = [
+            row for row in all_rows if row["direction_index"] == direction_index
+        ]
+        total_energy = sum(row["segment_energy"] for row in direction_rows)
+        mean_energy = float(np.mean([row["segment_energy"] for row in direction_rows]))
+        max_energy = float(np.max([row["segment_energy"] for row in direction_rows]))
+        mean_epd = float(np.mean([row["energy_per_distance"] for row in direction_rows]))
+
+        summary_rows.append(
+            {
+                "direction_index": int(direction_index),
+                "final_radius": float(segment_count * segment_length),
+                "total_energy": float(total_energy),
+                "mean_segment_energy": mean_energy,
+                "max_segment_energy": max_energy,
+                "mean_energy_per_distance": mean_epd,
+            }
+        )
+
+        print(
+            f"  total energy = {total_energy:.8f} | "
+            f"mean segment energy = {mean_energy:.8f} | "
+            f"max segment energy = {max_energy:.8f}"
+        )
+        print()
+
+    results_df = pd.DataFrame(all_rows)
+    summary_df = pd.DataFrame(summary_rows)
+
+    results_csv = OUTPUT_DIRECTORY / "small_network_directional_segment_energy.csv"
+    summary_csv = OUTPUT_DIRECTORY / "small_network_directional_segment_energy_summary.csv"
+    results_txt = OUTPUT_DIRECTORY / "small_network_directional_segment_energy.txt"
+
+    results_df.to_csv(results_csv, index=False)
+    summary_df.to_csv(summary_csv, index=False)
+
+    with open(results_txt, "w") as f:
+        f.write("Directional segment energy study\n\n")
+        f.write(f"parameter dimension = {int(initial_state.shape[0])}\n")
+        f.write(f"initial loss = {initial_loss:.8f}\n")
+        f.write(f"direction_count = {direction_count}\n")
+        f.write(f"segment_count = {segment_count}\n")
+        f.write(f"segment_length = {segment_length:.4f}\n")
+        f.write(f"terminal_time/segment = {terminal_time:.4f}\n\n")
+        f.write("Per-segment results:\n")
+        f.write(results_df.to_string(index=False))
+        f.write("\n\nDirection summary:\n")
+        f.write(summary_df.to_string(index=False))
+
+    make_plots(results_df)
+
+    print("\n================ DIRECTION SUMMARY ================\n")
+    print(summary_df.to_string(index=False))
+
+    print("\nSaved files:")
+    print(" ", results_csv)
+    print(" ", summary_csv)
+    print(" ", results_txt)
+    print(" ", OUTPUT_DIRECTORY / "small_network_directional_segment_energy.png")
+    print(" ", OUTPUT_DIRECTORY / "small_network_directional_cumulative_energy.png")
+    print(" ", OUTPUT_DIRECTORY / "small_network_directional_segment_energy_heatmap.png")
+    print(" ", OUTPUT_DIRECTORY / "small_network_directional_energy_per_distance_heatmap.png")
 
 
 if __name__ == "__main__":

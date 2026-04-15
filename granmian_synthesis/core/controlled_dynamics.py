@@ -19,7 +19,7 @@ from granmian_synthesis.control_synthesis import (
 )
 
 # Comment this out if want lower precision for faster computation, but may cause issues with convergence for some problems
-config.update("jax_enable_x64", True)
+# config.update("jax_enable_x64", True)
 
 Array = jnp.ndarray
 
