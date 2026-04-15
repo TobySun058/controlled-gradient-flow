@@ -1,0 +1,14 @@
+Minimum-energy landscape study
+softmin_sharpness = 1.25
+terminal_time     = 0.75
+
+                                 label  initial_x1  initial_x2  target_x1  target_x2  terminal_x1  terminal_x2  initial_target_distance  terminal_error  terminal_objective  minimum_energy_control_energy  energy_per_distance
+                 saddle_to_lower_basin         3.5         4.0        4.0        2.0     4.000000     2.000000                 2.061553    2.478807e-09            5.999558                       1.562677             0.758010
+            saddle_to_upper_left_basin         3.5         4.0        1.0        6.0     0.999999     6.000001                 3.201562    1.011589e-06            7.999998                       3.852638             1.203362
+right_steep_region_to_upper_left_basin         6.5         8.0        1.0        6.0     1.000000     6.000000                 5.852350    4.966528e-09            7.999998                       4.441715             0.758963
+       upper_left_basin_to_right_basin         1.0         6.0        4.0        2.0     4.000021     1.999972                 5.000000    3.538312e-05            5.999558                       5.519699             1.103940
+                         original_case         2.0         6.0        4.5        1.5     4.500004     1.499994                 5.147815    7.098785e-06            6.249878                       5.668346             1.101117
+       upper_left_basin_to_lower_basin         1.0         6.0        0.5        0.0     0.500022     0.000133                 6.020797    1.344538e-04            2.125011                       6.253620             1.038670
+       lower_basin_to_upper_left_basin         0.5         0.0        1.0        6.0     0.999999     5.999995                 6.020797    4.997900e-06            7.999998                       7.912633             1.314217
+     right_steep_region_to_lower_basin         6.5         8.0        0.5        0.0     0.499993     0.000010                10.000000    1.216573e-05            2.124996                       9.699245             0.969925
+     lower_basin_to_right_steep_region         0.5         0.0        6.5        8.0     6.500054     7.999919                10.000000    9.753323e-05           25.061987                      13.631667             1.363167

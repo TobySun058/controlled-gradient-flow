@@ -1,0 +1,348 @@
+
+==================== SUMMARY: softmin_sharpness = 0.50 ====================
+
+
+Uncontrolled dynamics
+  terminal state   = [ 1.496168,  5.962615]
+  terminal error   = 5.37939930
+  terminal objective = 8.09679710
+  control energy   = 0.00000000
+
+Minimum-energy synthesis
+  terminal state   = [ 4.499999,  1.500001]
+  terminal error   = 0.00000104
+  terminal objective = 6.19025885
+  control energy   = 5.62325849
+
+Approximate minimum-energy synthesis
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000007
+  terminal objective = 6.19025964
+  control energy   = 6.12963614
+
+Feedback linearization
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000000
+  terminal objective = 6.19025959
+  control energy   = 5.62409551
+
+Gradient descent
+  terminal state   = [ 1.015039,  5.964439]
+  terminal error   = 5.66358251
+  terminal objective = 7.98501824
+  control energy   = N/A
+
+Momentum gradient descent
+  terminal state   = [ 1.015409,  5.964747]
+  terminal error   = 5.66359773
+  terminal objective = 7.98501835
+  control energy   = N/A
+
+Stochastic gradient descent
+  terminal state   = [ 1.061355,  5.951936]
+  terminal error   = 5.62530155
+  terminal objective = 7.98611625
+  control energy   = N/A
+
+
+=========================================================================
+
+
+
+==================== SUMMARY: softmin_sharpness = 0.75 ====================
+
+
+Uncontrolled dynamics
+  terminal state   = [ 1.475255,  5.995947]
+  terminal error   = 5.41872885
+  terminal objective = 8.11136747
+  control energy   = 0.00000000
+
+Minimum-energy synthesis
+  terminal state   = [ 4.499999,  1.500001]
+  terminal error   = 0.00000115
+  terminal objective = 6.24301897
+  control energy   = 5.64415036
+
+Approximate minimum-energy synthesis
+  terminal state   = [ 4.496120,  1.506391]
+  terminal error   = 0.00747623
+  terminal objective = 6.23789807
+  control energy   = 6.49147394
+
+Feedback linearization
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000000
+  terminal objective = 6.24301978
+  control energy   = 5.64519712
+
+Gradient descent
+  terminal state   = [ 1.001065,  5.997954]
+  terminal error   = 5.69860871
+  terminal objective = 7.99937758
+  control energy   = N/A
+
+Momentum gradient descent
+  terminal state   = [ 1.001640,  5.997974]
+  terminal error   = 5.69827134
+  terminal objective = 7.99937774
+  control energy   = N/A
+
+Stochastic gradient descent
+  terminal state   = [ 1.046369,  5.987024]
+  terminal error   = 5.66223869
+  terminal objective = 8.00045874
+  control energy   = N/A
+
+
+=========================================================================
+
+
+
+==================== SUMMARY: softmin_sharpness = 1.00 ====================
+
+
+Uncontrolled dynamics
+  terminal state   = [ 1.472728,  5.999510]
+  terminal error   = 5.42309571
+  terminal objective = 8.11161986
+  control energy   = 0.00000000
+
+Minimum-energy synthesis
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000023
+  terminal objective = 6.24908836
+  control energy   = 5.65862779
+
+Approximate minimum-energy synthesis
+  terminal state   = [ 4.056850,  2.102345]
+  terminal error   = 0.74779775
+  terminal objective = 6.00524481
+  control energy   = 6.00696166
+
+Feedback linearization
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000000
+  terminal objective = 6.24908852
+  control energy   = 5.65984635
+
+Gradient descent
+  terminal state   = [ 1.000079,  5.999867]
+  terminal error   = 5.70072375
+  terminal objective = 7.99996873
+  control energy   = N/A
+
+Momentum gradient descent
+  terminal state   = [ 1.000669,  5.999869]
+  terminal error   = 5.70036312
+  terminal objective = 7.99996890
+  control energy   = N/A
+
+Stochastic gradient descent
+  terminal state   = [ 1.045287,  5.989076]
+  terminal error   = 5.66452519
+  terminal objective = 8.00104838
+  control energy   = N/A
+
+
+=========================================================================
+
+
+
+==================== SUMMARY: softmin_sharpness = 1.25 ====================
+
+
+Uncontrolled dynamics
+  terminal state   = [ 1.472413,  5.999938]
+  terminal error   = 5.42362711
+  terminal objective = 8.11157736
+  control energy   = 0.00000000
+
+Minimum-energy synthesis
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000001
+  terminal objective = 6.24987324
+  control energy   = 5.66833661
+
+Approximate minimum-energy synthesis
+  terminal state   = [ 5.704023, -0.105649]
+  terminal error   = 2.00693318
+  terminal objective = 9.66870951
+  control energy   = 8.67891705
+
+Feedback linearization
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000000
+  terminal objective = 6.24987324
+  control energy   = 5.66969251
+
+Gradient descent
+  terminal state   = [ 1.000006,  5.999991]
+  terminal error   = 5.70086624
+  terminal objective = 7.99999827
+  control energy   = N/A
+
+Momentum gradient descent
+  terminal state   = [ 1.000597,  5.999991]
+  terminal error   = 5.70050352
+  terminal objective = 7.99999845
+  control energy   = N/A
+
+Stochastic gradient descent
+  terminal state   = [ 1.045205,  5.989213]
+  terminal error   = 5.66468416
+  terminal objective = 8.00107778
+  control energy   = N/A
+
+
+=========================================================================
+
+
+
+==================== SUMMARY: softmin_sharpness = 1.50 ====================
+
+
+Uncontrolled dynamics
+  terminal state   = [ 1.472372,  5.999992]
+  terminal error   = 5.42369405
+  terminal objective = 8.11156707
+  control energy   = 0.00000000
+
+Minimum-energy synthesis
+  terminal state   = [ 4.500008,  1.499989]
+  terminal error   = 0.00001412
+  terminal objective = 6.24999153
+  control energy   = 5.67520895
+
+Approximate minimum-energy synthesis
+  terminal state   = [ 5.710219, -0.113700]
+  terminal error   = 2.01709154
+  terminal objective = 9.69628714
+  control energy   = 8.70121978
+
+Feedback linearization
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000000
+  terminal objective = 6.24998164
+  control energy   = 5.67665456
+
+Gradient descent
+  terminal state   = [ 1.000001,  5.999999]
+  terminal error   = 5.70087613
+  terminal objective = 7.99999990
+  control energy   = N/A
+
+Momentum gradient descent
+  terminal state   = [ 1.000592,  5.999999]
+  terminal error   = 5.70051320
+  terminal objective = 8.00000007
+  control energy   = N/A
+
+Stochastic gradient descent
+  terminal state   = [ 1.045198,  5.989223]
+  terminal error   = 5.66469557
+  terminal objective = 8.00107939
+  control energy   = N/A
+
+
+=========================================================================
+
+
+
+==================== SUMMARY: softmin_sharpness = 1.75 ====================
+
+
+Uncontrolled dynamics
+  terminal state   = [ 1.472367,  5.999999]
+  terminal error   = 5.42370264
+  terminal objective = 8.11156537
+  control energy   = 0.00000000
+
+Minimum-energy synthesis
+  terminal state   = [ 4.500005,  1.499993]
+  terminal error   = 0.00000857
+  terminal objective = 6.25000327
+  control energy   = 5.68027325
+
+Approximate minimum-energy synthesis
+  terminal state   = [ 5.707770, -0.110374]
+  terminal error   = 2.01296130
+  terminal objective = 9.68507847
+  control energy   = 8.70227823
+
+Feedback linearization
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000000
+  terminal objective = 6.24999727
+  control energy   = 5.68181325
+
+Gradient descent
+  terminal state   = [ 1.000000,  6.000000]
+  terminal error   = 5.70087683
+  terminal objective = 7.99999999
+  control energy   = N/A
+
+Momentum gradient descent
+  terminal state   = [ 1.000592,  6.000000]
+  terminal error   = 5.70051387
+  terminal objective = 8.00000017
+  control energy   = N/A
+
+Stochastic gradient descent
+  terminal state   = [ 1.045198,  5.989224]
+  terminal error   = 5.66469640
+  terminal objective = 8.00107948
+  control energy   = N/A
+
+
+=========================================================================
+
+
+
+==================== SUMMARY: softmin_sharpness = 2.00 ====================
+
+
+Uncontrolled dynamics
+  terminal state   = [ 1.472367,  6.000000]
+  terminal error   = 5.42370376
+  terminal objective = 8.11156512
+  control energy   = 0.00000000
+
+Minimum-energy synthesis
+  terminal state   = [ 4.499983,  1.500022]
+  terminal error   = 0.00002766
+  terminal objective = 6.24998022
+  control energy   = 5.68412428
+
+Approximate minimum-energy synthesis
+  terminal state   = [ 5.705575, -0.107436]
+  terminal error   = 2.00929386
+  terminal objective = 9.67513643
+  control energy   = 8.70234881
+
+Feedback linearization
+  terminal state   = [ 4.500000,  1.500000]
+  terminal error   = 0.00000000
+  terminal objective = 6.24999958
+  control energy   = 5.68578165
+
+Gradient descent
+  terminal state   = [ 1.000000,  6.000000]
+  terminal error   = 5.70087688
+  terminal objective = 8.00000000
+  control energy   = N/A
+
+Momentum gradient descent
+  terminal state   = [ 1.000592,  6.000000]
+  terminal error   = 5.70051392
+  terminal objective = 8.00000017
+  control energy   = N/A
+
+Stochastic gradient descent
+  terminal state   = [ 1.045198,  5.989224]
+  terminal error   = 5.66469647
+  terminal objective = 8.00107949
+  control energy   = N/A
+
+
+=========================================================================
