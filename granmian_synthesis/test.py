@@ -363,16 +363,63 @@ def plot_all_trajectories(
     plt.contourf(np.array(X), np.array(Y), np.array(Z), levels=levels)
     plt.contour(np.array(X), np.array(Y), np.array(Z), levels=levels, linewidths=0.6)
 
-    plt.plot(np.array(traj_zero[:, 0]), np.array(traj_zero[:, 1]), linewidth=2, label="u = 0")
-    plt.plot(np.array(traj_min[:, 0]), np.array(traj_min[:, 1]), linewidth=2, label="u2_min")
-    plt.plot(np.array(traj_almost_min[:, 0]), np.array(traj_almost_min[:, 1]), linewidth=2, label="u2_almost_min")
-    plt.plot(np.array(traj_fl[:, 0]), np.array(traj_fl[:, 1]), linewidth=2, label="u_fl")
-    plt.plot(np.array(traj_gd[:, 0]), np.array(traj_gd[:, 1]), linewidth=2, label="GD")
-    plt.plot(np.array(traj_momentum[:, 0]), np.array(traj_momentum[:, 1]), linewidth=2, label="Momentum GD")
-    plt.plot(np.array(traj_sgd[:, 0]), np.array(traj_sgd[:, 1]), linewidth=2, label="Stochastic GD")
+    plt.plot(
+        np.array(traj_zero[:, 0]),
+        np.array(traj_zero[:, 1]),
+        linewidth=2,
+        label="Uncontrolled dynamics",
+    )
+    plt.plot(
+        np.array(traj_min[:, 0]),
+        np.array(traj_min[:, 1]),
+        linewidth=2,
+        label="Min-energy control",
+    )
+    plt.plot(
+        np.array(traj_almost_min[:, 0]),
+        np.array(traj_almost_min[:, 1]),
+        linewidth=2,
+        label="Approx min-energy control",
+    )
+    plt.plot(
+        np.array(traj_fl[:, 0]),
+        np.array(traj_fl[:, 1]),
+        linewidth=2,
+        label="Feedback-linearized control",
+    )
+    plt.plot(
+        np.array(traj_gd[:, 0]),
+        np.array(traj_gd[:, 1]),
+        linewidth=2,
+        label="Gradient descent",
+    )
+    plt.plot(
+        np.array(traj_momentum[:, 0]),
+        np.array(traj_momentum[:, 1]),
+        linewidth=2,
+        label="Momentum gradient descent",
+    )
+    plt.plot(
+        np.array(traj_sgd[:, 0]),
+        np.array(traj_sgd[:, 1]),
+        linewidth=2,
+        label="Stochastic gradient descent",
+    )
 
-    plt.scatter([float(x_init[0])], [float(x_init[1])], marker="o", s=80, label="x_init")
-    plt.scatter([float(x_target[0])], [float(x_target[1])], marker="*", s=180, label="x_target")
+    plt.scatter(
+        [float(x_init[0])],
+        [float(x_init[1])],
+        marker="o",
+        s=80,
+        label="Initial state",
+    )
+    plt.scatter(
+        [float(x_target[0])],
+        [float(x_target[1])],
+        marker="*",
+        s=180,
+        label="Target state",
+    )
 
     plt.xlabel("x1")
     plt.ylabel("x2")
