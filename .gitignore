@@ -8,23 +8,22 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
+# Research runtime artifacts
+*_checkpoint.pkl
+*_progress.json
+*_partial_*
+*.tmp
+*.log
+
 # OS / editors
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 
-# Tool caches
+# Tooling caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
 htmlcov/
-
-# Long-running experiment state
-results/checkpoints/
-*_checkpoint.pkl
-*_partial_*
-*_progress.json
-*.log
-*.tmp

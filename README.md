@@ -83,3 +83,8 @@ Ongoing work extends nonlinear minimum-energy steering ideas toward state-to-sta
 ## Notes
 
 The numerical experiments rely on JAX/Diffrax and can be computationally expensive. Long-running energy-atlas scripts support checkpointing locally, but checkpoint files and partial intermediate artifacts are not committed.
+
+
+## Code organization
+
+The public repository now uses the package name `controlled_gradient_flow` consistently. Historical prototype scripts, generated checkpoints, and partial-run artifacts are intentionally excluded so the repository emphasizes reusable methods and reproducible experiments rather than intermediate research state.
