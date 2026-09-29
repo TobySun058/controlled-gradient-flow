@@ -1,6 +1,0 @@
-{
-  "edge_counter": 1088,
-  "failure_count": 0,
-  "checkpoint_path": "granmian_synthesis\\data\\energy_basin_atlas_checkpoint.pkl",
-  "partial_edges_csv": "granmian_synthesis\\data\\energy_basin_atlas_partial_edges.csv"
-}

@@ -1,76 +1,85 @@
 # Controlled Gradient Flow for ML Optimization
 
-Research code for studying nonconvex optimization landscapes through **minimum-energy controlled gradient flow**.
+Research code for characterizing nonconvex optimization landscapes through **minimum-energy controlled gradient flow**.
 
-This project treats gradient flow as a control-affine dynamical system,
+The project treats gradient flow as a control-affine dynamical system,
 
 ```math
 \dot{\theta}(t) = -\nabla L(\theta(t)) + u(t),
 ```
 
-and asks how much control energy is required to steer optimization trajectories between states and attraction basins. The central idea is to use steering energy as a geometric measure of how difficult different directions and basin transitions are.
+and asks how much control energy is required to steer an optimization trajectory between states and attraction basins. Steering energy becomes a geometric measure of directional difficulty, basin transitions, and local traversability.
 
-## What this repository contains
+## Highlights
 
-- **Controlled gradient-flow dynamics** for synthetic nonconvex objectives and small ML examples.
-- **Gramian and nonlinear almost-Gramian steering** routines for approximate minimum-energy state transfer.
-- **Baseline comparisons** against uncontrolled gradient descent, momentum, SGD, and feedback-linearizing control.
-- **Energy-basin analysis** that aggregates local steering difficulty into larger regions of the landscape.
-- **Parameter sweeps and visualization scripts** for comparing trajectories, energy-per-distance, and basin structure.
+- nonlinear and almost-Gramian minimum-energy steering;
+- controlled vs. uncontrolled optimization comparisons;
+- synthetic nonconvex and small neural-network loss experiments;
+- directional energy maps and basin aggregation;
+- parameter sweeps for soft-min landscapes;
+- reproducible result artifacts separated from source code.
 
 ## Representative results
 
-### Controlled vs. baseline trajectories
+### Controlled trajectories
 
-![Trajectory comparison](granmian_synthesis/plots/comparative_trajectory_map_softmin_sharpness_1.25.png)
-
-The experiments compare uncontrolled optimization trajectories with minimum-energy controlled transfers and standard optimization baselines on nonconvex objectives.
+![Trajectory comparison](results/figures/trajectory-sweeps/comparative_trajectory_map_softmin_sharpness_1.25.png)
 
 ### Energy basin atlas
 
-![Energy basin atlas](granmian_synthesis/data/energy_basin_atlas_comparison.png)
+![Energy basin atlas](results/figures/energy-basins/energy_basin_atlas_comparison.png)
 
-A representative 17 x 17 landscape sweep produces an energy-based partition into three basins. The basin atlas is constructed from directional steering costs rather than only objective values or Euclidean distance.
+The atlas groups regions using directional steering cost rather than objective value or Euclidean distance alone.
 
 ## Repository structure
 
 ```text
 .
-├── granmian_synthesis/
-│   ├── control_synthesis/   # Gramian and almost-Gramian steering routines
-│   ├── core/                # objectives, controlled dynamics, baselines
-│   ├── experiments/         # experiment entry points
-│   ├── data/                # generated summaries and basin-atlas outputs
-│   └── plots/               # generated figures
-└── uncontrolled_GD_comparison/
-    └── ...                  # baseline gradient-descent studies
+├── controlled_gradient_flow/
+│   ├── control_synthesis/   # Gramian / almost-Gramian steering
+│   ├── core/                # objectives, dynamics, baselines, visualization
+│   └── experiments/         # reproducible experiment entry points
+├── baselines/               # standalone GD / momentum / SGD comparisons
+├── results/
+│   ├── data/                # finalized CSV/TXT experiment outputs
+│   └── figures/             # energy maps, sweeps, diagnostics
+├── requirements.txt
+└── README.md
 ```
 
-> Note: the historical package directory is named `granmian_synthesis`. It is retained for now to avoid breaking old experiment imports; the code itself implements Gramian-based synthesis.
+Generated checkpoints, partial outputs, caches, and temporary experiment state are intentionally excluded from version control.
 
 ## Setup
 
-Python dependencies used by the research code are listed in `requirements.txt`.
-
 ```bash
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\\Scripts\\activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Most experiments are intended to be run from the repository root. For example:
+## Example experiments
+
+Run from the repository root:
 
 ```bash
-python -m granmian_synthesis.experiments.run_single_case_comparison
-python -m granmian_synthesis.experiments.run_energy_basin_detection
+python -m controlled_gradient_flow.experiments.run_single_case_comparison
+python -m controlled_gradient_flow.experiments.run_softmin_sweep
+python -m controlled_gradient_flow.experiments.run_energy_basin_detection
 ```
 
-The experiments use JAX/Diffrax for differentiable nonlinear dynamics and numerical integration. Runtime can vary substantially across experiments.
+Standalone optimization baselines can be run with:
+
+```bash
+python baselines/quadratic_baselines.py
+python baselines/softmin_baselines.py
+```
 
 ## Research context
 
-This repository contains code from research in the Ching Lab at Washington University in St. Louis on using control-theoretic tools to understand optimization landscapes. The completed phase focused on controlled gradient flow and energy-based basin structure. Ongoing work extends related nonlinear minimum-energy steering ideas toward state-to-state steering for robotic motion planning.
+This repository contains the completed controlled-gradient-flow phase of research in the Ching Lab at Washington University in St. Louis. The broader research direction connects control-theoretic steering energy with optimization-landscape geometry.
 
-## Status
+Ongoing work extends nonlinear minimum-energy steering ideas toward state-to-state steering for sampling-based robotic motion planning; that unfinished work is intentionally kept separate from this completed study.
 
-Research code is being cleaned for reproducibility and public presentation. The numerical experiments and figures here reflect the completed controlled-gradient-flow study; ongoing research directions are not yet included as finalized implementations.
+## Notes
+
+The numerical experiments rely on JAX/Diffrax and can be computationally expensive. Long-running energy-atlas scripts support checkpointing locally, but checkpoint files and partial intermediate artifacts are not committed.

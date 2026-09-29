@@ -1,8 +1,11 @@
 jax
 diffrax
+equinox
 jaxtyping
+quadax
 numpy
 scipy
 pandas
 matplotlib
+scikit-learn
 pyyaml
