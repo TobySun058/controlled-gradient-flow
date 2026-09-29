@@ -13,20 +13,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from granmian_synthesis.core.controlled_dynamics import (
+from controlled_gradient_flow.core.controlled_dynamics import (
     build_control_affine_gradient_flow_system,
     create_control_synthesis_problem,
     create_ode_solver_interface,
     simulate_minimum_energy,
 )
-from granmian_synthesis.core.objective import (
+from controlled_gradient_flow.core.objective import (
     create_default_objective_parameters,
     create_uncontrolled_gradient_flow,
     evaluate_smooth_minimum_objective,
 )
 
 
-OUTPUT_DIRECTORY = Path("granmian_synthesis/data")
+OUTPUT_DIRECTORY = Path("results/data")
 OUTPUT_BASENAME = "energy_basin_atlas_wider"
 OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
 

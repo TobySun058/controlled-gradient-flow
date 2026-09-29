@@ -7,9 +7,9 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from granmian_synthesis.core.objective import evaluate_smooth_minimum_objective
+from controlled_gradient_flow.core.objective import evaluate_smooth_minimum_objective
 
-OUTPUT_DIRECTORY = Path("plots")
+OUTPUT_DIRECTORY = Path("results/figures")
 OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 

@@ -9,7 +9,7 @@
 # from jax import config
 # import numpy as np
 
-# from granmian_synthesis.control_synthesis import (
+# from controlled_gradient_flow.control_synthesis import (
 #     integrate_control_energy,
 #     make_solver_wrapper,
 #     setup_control_synthesis,
@@ -384,7 +384,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import config
 
-from granmian_synthesis.control_synthesis import (
+from controlled_gradient_flow.control_synthesis import (
     integrate_control_energy,
     make_solver_wrapper,
     setup_control_synthesis,

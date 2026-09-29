@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import jax.numpy as jnp
 
-from granmian_synthesis.core.objective import evaluate_smooth_minimum_gradient
+from controlled_gradient_flow.core.objective import evaluate_smooth_minimum_gradient
 
 
 def compute_gradient_descent_trajectory(
