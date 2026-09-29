@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "controlled-gradient-flow"
+version = "0.1.0"
+description = "Minimum-energy controlled gradient flow for nonconvex optimization research."
+requires-python = ">=3.12"
+dependencies = [
+  "jax",
+  "diffrax",
+  "equinox",
+  "jaxtyping",
+  "quadax",
+  "numpy",
+  "scipy",
+  "pandas",
+  "matplotlib",
+  "scikit-learn",
+  "pyyaml",
+]
+
+[tool.setuptools.packages.find]
+include = ["controlled_gradient_flow*"]
