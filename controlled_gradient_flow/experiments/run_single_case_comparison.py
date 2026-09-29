@@ -2,22 +2,22 @@ from __future__ import annotations
 
 import jax.numpy as jnp
 
-from granmian_synthesis.core.baseline_methods import (
+from controlled_gradient_flow.core.baseline_methods import (
     compute_gradient_descent_trajectory,
     compute_momentum_gradient_descent_trajectory,
     compute_stochastic_gradient_descent_trajectory,
 )
-from granmian_synthesis.core.visualization import (
+from controlled_gradient_flow.core.visualization import (
     plot_comparative_trajectory_map,
     plot_reduced_control_comparison_map,
 )
-from granmian_synthesis.core.controlled_dynamics import (
+from controlled_gradient_flow.core.controlled_dynamics import (
     build_control_affine_gradient_flow_system,
     create_control_synthesis_problem,
     create_ode_solver_interface,
     simulate_control_strategy_comparison,
 )
-from granmian_synthesis.core.objective import (
+from controlled_gradient_flow.core.objective import (
     create_default_objective_parameters,
     create_uncontrolled_gradient_flow,
 )

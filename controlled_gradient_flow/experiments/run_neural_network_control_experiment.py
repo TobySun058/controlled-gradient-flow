@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from granmian_synthesis.core.controlled_dynamics import (
+from controlled_gradient_flow.core.controlled_dynamics import (
     build_control_affine_gradient_flow_system,
     create_control_synthesis_problem,
     create_ode_solver_interface,
     simulate_control_strategy_comparison,
 )
-from granmian_synthesis.core.ml_loss_neural_network import (
+from controlled_gradient_flow.core.ml_loss_neural_network import (
     NetworkArchitecture,
     create_large_network_gradient_flow,
     create_synthetic_binary_classification_dataset,
@@ -25,7 +25,7 @@ from granmian_synthesis.core.ml_loss_neural_network import (
 )
 
 
-OUTPUT_DIRECTORY = Path("granmian_synthesis/data")
+OUTPUT_DIRECTORY = Path("results/data")
 OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 
